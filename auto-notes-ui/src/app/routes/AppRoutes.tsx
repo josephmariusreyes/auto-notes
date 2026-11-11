@@ -1,32 +1,36 @@
-import { Suspense, lazy } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, createBrowserRouter } from 'react-router-dom'
 
-const PublicLayout = lazy(() => import('../shared/layouts/PublicLayout'))
-const AuthenticatedLayout = lazy(() => import('../shared/layouts/AuthenticatedLayout'))
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Navigate to="/auth/login" replace />,
+  },
+  {
+    lazy: async () => ({ Component: (await import('../shared/layouts/PublicLayout')).default }),
+    children: [
+      {
+        path: '/auth/login',
+        lazy: async () => ({ Component: (await import('../../features/authentication/containers/LoginContainer')).default }),
+      },
+      {
+        path: '/user-accounts/register-user',
+        lazy: async () => ({ Component: (await import('../../features/user-accounts/containers/RegisterUserContainer')).default }),
+      },
+    ],
+  },
+  {
+    lazy: async () => ({ Component: (await import('../shared/layouts/AuthenticatedLayout')).default }),
+    children: [
+      {
+        path: '/user-accounts/user-listing',
+        lazy: async () => ({ Component: (await import('../../features/user-accounts/containers/UserListing')).default }),
+      },
+    ],
+  },
+  {
+    path: '*',
+    element: <Navigate to="/auth/login" replace />,
+  },
+])
 
-const LoginContainer = lazy(() => import('../../features/authentication/containers/LoginContainer'))
-const RegisterUserContainer = lazy(() => import('../../features/user-accounts/containers/RegisterUserContainer'))
-const UserListing = lazy(() => import('../../features/user-accounts/containers/UserListing'))
-
-function AppRoutes() {
-  return (
-    <Suspense fallback={<div className="route-loader">Loading...</div>}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/auth/login" replace />} />
-
-        <Route element={<PublicLayout />}>
-          <Route path="/auth/login" element={<LoginContainer />} />
-          <Route path="/user-accounts/register-user" element={<RegisterUserContainer />} />
-        </Route>
-
-        <Route element={<AuthenticatedLayout />}>
-          <Route path="/user-accounts/user-listing" element={<UserListing />} />
-        </Route>
-
-        <Route path="*" element={<Navigate to="/auth/login" replace />} />
-      </Routes>
-    </Suspense>
-  )
-}
-
-export default AppRoutes
+export default router
