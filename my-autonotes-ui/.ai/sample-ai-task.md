@@ -2,9 +2,7 @@
 
 ## Instruction
 
-===
-
-## Constraints
+## Notes
 
 ## Acceptance Criteria
 
